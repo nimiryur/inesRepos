@@ -22,8 +22,11 @@ import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import java.awt.Panel;
+import java.awt.FlowLayout;
+import javax.swing.border.LineBorder;
 
-public class Modificar extends JFrame {
+public class Eliminar extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField textUser;
@@ -43,7 +46,7 @@ public class Modificar extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Modificar frame = new Modificar();
+					Eliminar frame = new Eliminar();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -55,7 +58,7 @@ public class Modificar extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public Modificar() {
+	public Eliminar() {
 		setTitle("Login");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 710, 365);
@@ -64,49 +67,54 @@ public class Modificar extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
+		JPanel panel = new JPanel();
+		panel.setBorder(new LineBorder(new Color(165, 42, 42), 3, true));
+		FlowLayout flowLayout = (FlowLayout) panel.getLayout();
+		flowLayout.setAlignOnBaseline(true);
+		panel.setBounds(96, 30, 177, 224);
+		contentPane.add(panel);
+		
 		JLabel lblNewLabel = new JLabel("Usuario");
+		panel.add(lblNewLabel);
 		lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblNewLabel.setBounds(187, 22, 60, 28);
-		contentPane.add(lblNewLabel);
 		
 		textUser = new JTextField();
+		panel.add(textUser);
+		textUser.setEditable(false);
 		textUser.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		textUser.setBounds(119, 50, 196, 28);
-		contentPane.add(textUser);
 		textUser.setColumns(10);
 		
 		JLabel lblContrasea = new JLabel("Contrase\u00F1a");
+		panel.add(lblContrasea);
 		lblContrasea.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblContrasea.setBounds(178, 89, 78, 28);
-		contentPane.add(lblContrasea);
 		
 		textPass = new JTextField();
+		panel.add(textPass);
+		textPass.setEditable(false);
 		textPass.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		textPass.setColumns(10);
-		textPass.setBounds(119, 128, 196, 28);
-		contentPane.add(textPass);
 		
 		JLabel lblNombre = new JLabel("Nombre");
+		panel.add(lblNombre);
 		lblNombre.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblNombre.setBounds(186, 167, 60, 28);
-		contentPane.add(lblNombre);
 		
 		textNombre = new JTextField();
+		panel.add(textNombre);
+		textNombre.setEditable(false);
 		textNombre.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		textNombre.setColumns(10);
-		textNombre.setBounds(119, 206, 196, 28);
-		contentPane.add(textNombre);
 		
-		JButton btnModificar = new JButton("Modificar");
-		btnModificar.addActionListener(new ActionListener() {
+		JButton btnEliminar = new JButton("Eliminar");
+		panel.add(btnEliminar);
+		btnEliminar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String user = textUser.getText().toString();
 				String pass = textPass.getText().toString();
 				String nombre = textNombre.getText().toString();
 				
-				String sql = "UPDATE `trj_user` SET `user` = '"+ user + "', `pass` = '" + pass + "', `nombre` = '"+ nombre +"' WHERE `trj_user`.`user` = '"+ user + "'; ";
+				String sql = "DELETE FROM `trj_user` WHERE `trj_user`.`user` = '"+ tmp_user + "'";
 				//Debug
-				System.out.println(sql);
+				//System.out.println(sql);
 				textUser.setText(null);
 				textPass.setText(null);
 				textNombre.setText(null);
@@ -115,11 +123,22 @@ public class Modificar extends JFrame {
 					//Statement necesario para ir a la base de datos
 					Statement comando = conexion.createStatement();
 					
-					comando.execute(sql);
+					System.out.println(sql);
 					
-					String msg = "El registro ha sido grabado con éxito";
-					JOptionPane.showMessageDialog(null, msg, "Registro", 
-							JOptionPane.INFORMATION_MESSAGE);
+					int ok = JOptionPane.showConfirmDialog(null, "Desea eliminar el registro: " + tmp_user, "Eliminar registro", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
+					
+					
+					if (ok==0) {
+						comando.execute(sql);
+						comboNombre.removeItem(comboNombre.getSelectedItem());
+						comboNombre.setSelectedItem(""); //combo a blanco
+						limpiar_campos(); //campos a blanco
+					}
+					
+					
+					//String msg = "El registro ha sido eliminado con éxtio";
+					//JOptionPane.showMessageDialog(null, msg, "Registro", 
+							//JOptionPane.INFORMATION_MESSAGE);
 					
 				} catch (SQLException e2) {
 					// ERRORES
@@ -129,17 +148,17 @@ public class Modificar extends JFrame {
 				}
 				
 			}
+
+			
 		});
-		btnModificar.setBackground(new Color(135, 206, 250));
-		btnModificar.setForeground(new Color(30, 144, 255));
-		btnModificar.setFont(new Font("Tahoma", Font.BOLD, 14));
-		btnModificar.setBounds(119, 268, 196, 28);
-		contentPane.add(btnModificar);
+		btnEliminar.setBackground(new Color(255, 192, 203));
+		btnEliminar.setForeground(new Color(128, 0, 0));
+		btnEliminar.setFont(new Font("Tahoma", Font.BOLD, 14));
 		
 		textBuscar = new JTextField();
 		textBuscar.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		textBuscar.setColumns(10);
-		textBuscar.setBounds(370, 50, 196, 28);
+		textBuscar.setBounds(340, 54, 196, 28);
 		contentPane.add(textBuscar);
 		
 		JButton btnBuscar = new JButton();
@@ -153,7 +172,7 @@ public class Modificar extends JFrame {
 				
 			}
 		});
-		btnBuscar.setBounds(600, 50, 48, 41);
+		btnBuscar.setBounds(565, 49, 33, 33);
 		contentPane.add(btnBuscar);
 		
 		lblNo = new JLabel("No se han encontrado coincidencias");
@@ -204,7 +223,6 @@ public class Modificar extends JFrame {
 	public void cargar_Combo() {
 		String sql = "SELECT `user` FROM `trj_user`";
 		
-
 		Statement registro;
 		try {
 			registro = conexion.createStatement();
@@ -224,7 +242,7 @@ public class Modificar extends JFrame {
 	public void buscar(String str_search) {
 		
 		String sql = "SELECT * FROM `trj_user` WHERE `user`= '"+ str_search +"'";
-		System.out.println(sql);
+		//System.out.println(sql);
 		
 		Statement registro;
 		try {
@@ -246,6 +264,12 @@ public class Modificar extends JFrame {
 	}
 	
 	
+	//*********limpiar campos***
+	public void limpiar_campos() {
+		textUser.setText(null);
+		textPass.setText(null);
+		textNombre.setText(null);
+	}
 }//fin clase
 	
 	

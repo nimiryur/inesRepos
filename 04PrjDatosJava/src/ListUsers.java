@@ -18,22 +18,32 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Iterator;
 import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.border.LineBorder;
+import javax.swing.table.DefaultTableModel;
 
-public class Modificar extends JFrame {
+import com.mysql.cj.x.protobuf.MysqlxSession.Reset;
+
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+public class ListUsers extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField textUser;
 	private JTextField textPass;
 	private JTextField textNombre;
 	private Connection conexion;
-	private JTextField textBuscar;
-	private JLabel lblNo;
 	private String tmp_user;
-	private JComboBox comboNombre;
+	private JPanel panel;
+	private JTable tabla;
+	private DefaultTableModel modelo;
 	
 
 	/**
@@ -43,7 +53,7 @@ public class Modificar extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Modificar frame = new Modificar();
+					ListUsers frame = new ListUsers();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -55,49 +65,59 @@ public class Modificar extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public Modificar() {
+	public ListUsers() {
 		setTitle("Login");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 710, 365);
+		setBounds(100, 100, 759, 380);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
+		panel = new JPanel();
+		panel.setBorder(new LineBorder(new Color(0, 255, 204), 2));
+		panel.setForeground(new Color(0, 128, 128));
+		panel.setBounds(454, 25, 262, 282);
+		contentPane.add(panel);
+		panel.setLayout(null);
+		
 		JLabel lblNewLabel = new JLabel("Usuario");
+		lblNewLabel.setBounds(108, 14, 45, 17);
+		panel.add(lblNewLabel);
 		lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblNewLabel.setBounds(187, 22, 60, 28);
-		contentPane.add(lblNewLabel);
 		
 		textUser = new JTextField();
+		textUser.setBounds(67, 45, 126, 23);
+		panel.add(textUser);
 		textUser.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		textUser.setBounds(119, 50, 196, 28);
-		contentPane.add(textUser);
 		textUser.setColumns(10);
 		
 		JLabel lblContrasea = new JLabel("Contrase\u00F1a");
+		lblContrasea.setBounds(95, 82, 70, 17);
+		panel.add(lblContrasea);
 		lblContrasea.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblContrasea.setBounds(178, 89, 78, 28);
-		contentPane.add(lblContrasea);
 		
 		textPass = new JTextField();
+		textPass.setBounds(67, 113, 126, 23);
+		panel.add(textPass);
 		textPass.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		textPass.setColumns(10);
-		textPass.setBounds(119, 128, 196, 28);
-		contentPane.add(textPass);
 		
 		JLabel lblNombre = new JLabel("Nombre");
+		lblNombre.setBounds(100, 150, 60, 28);
+		panel.add(lblNombre);
 		lblNombre.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblNombre.setBounds(186, 167, 60, 28);
-		contentPane.add(lblNombre);
 		
 		textNombre = new JTextField();
+		textNombre.setBounds(32, 192, 196, 28);
+		panel.add(textNombre);
 		textNombre.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		textNombre.setColumns(10);
-		textNombre.setBounds(119, 206, 196, 28);
-		contentPane.add(textNombre);
 		
 		JButton btnModificar = new JButton("Modificar");
+		btnModificar.setEnabled(false);
+		btnModificar.setBounds(32, 234, 196, 28);
+		panel.add(btnModificar);
 		btnModificar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String user = textUser.getText().toString();
@@ -121,6 +141,19 @@ public class Modificar extends JFrame {
 					JOptionPane.showMessageDialog(null, msg, "Registro", 
 							JOptionPane.INFORMATION_MESSAGE);
 					
+					
+					
+					//********REFRESCAR EL MODELO DESPUES DE MODIFICAR****
+					int contador = modelo.getRowCount();
+					for (int i = contador-1; i >= 0; i--) {
+						modelo.removeRow(i);
+						
+						//System.out.println("ahora");
+					}
+					
+														
+					rellenar_tabla();
+					
 				} catch (SQLException e2) {
 					// ERRORES
 					System.out.println(e2.getMessage().toString());
@@ -130,55 +163,40 @@ public class Modificar extends JFrame {
 				
 			}
 		});
-		btnModificar.setBackground(new Color(135, 206, 250));
-		btnModificar.setForeground(new Color(30, 144, 255));
+		btnModificar.setBackground(new Color(255, 250, 205));
+		btnModificar.setForeground(new Color(0, 139, 139));
 		btnModificar.setFont(new Font("Tahoma", Font.BOLD, 14));
-		btnModificar.setBounds(119, 268, 196, 28);
-		contentPane.add(btnModificar);
 		
-		textBuscar = new JTextField();
-		textBuscar.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		textBuscar.setColumns(10);
-		textBuscar.setBounds(370, 50, 196, 28);
-		contentPane.add(textBuscar);
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(27, 25, 396, 282);
+		contentPane.add(scrollPane);
 		
-		JButton btnBuscar = new JButton();
-		ImageIcon icono = new ImageIcon("assets/lupa.png");
-		btnBuscar.setIcon(icono);
-		btnBuscar.addActionListener(new ActionListener() {
-		
-			public void actionPerformed(ActionEvent e) {
-				String str_buscar = textBuscar.getText();
-				buscar(str_buscar);
-				
+		tabla = new JTable();
+		tabla.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				int fila = tabla.rowAtPoint(e.getPoint()); //devuelve la fila donde se clicka
+				//System.out.println(fila);
+				int columna = 0;
+				if ((fila>-1)&&(columna>-1)) {
+					textUser.setText(modelo.getValueAt(fila, columna).toString());
+					textPass.setText(modelo.getValueAt(fila, columna+1).toString());
+					textNombre.setText(modelo.getValueAt(fila, columna+2).toString());
+					
+					btnModificar.setEnabled(true);
+				} 
 			}
 		});
-		btnBuscar.setBounds(600, 50, 48, 41);
-		contentPane.add(btnBuscar);
+		scrollPane.setViewportView(tabla);
+		//ImageIcon icono = new ImageIcon("assets/lupa.png");
 		
-		lblNo = new JLabel("No se han encontrado coincidencias");
-		lblNo.setVisible(false);
-		lblNo.setForeground(Color.RED);
-		lblNo.setBounds(370, 93, 218, 24);
-		contentPane.add(lblNo);
+		modelo  = new DefaultTableModel();
+	
+		modelo.addColumn("Usuario");
+		modelo.addColumn("Pass");
+		modelo.addColumn("Nombre");
 		
-		
-		comboNombre = new JComboBox();
-		comboNombre.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				String str_buscar = (String) comboNombre.getSelectedItem();
-				buscar(str_buscar);
-			}
-			
-		});
-		comboNombre.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		comboNombre.setBounds(370, 169, 196, 24);
-		contentPane.add(comboNombre);
-		
-		JLabel lblUsuarios = new JLabel("Usuarios");
-		lblUsuarios.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblUsuarios.setBounds(370, 130, 78, 28);
-		contentPane.add(lblUsuarios);
+		tabla.setModel(modelo);
 		
 		
 		// -----------CONEXION A LA BASE DE DATOS-------------
@@ -197,10 +215,61 @@ public class Modificar extends JFrame {
 		}
 		
 		//CARGAR COMBO
-		cargar_Combo();
+		//cargar_Combo();
+		rellenar_tabla();
 		
 	}// fin del constructor
 	
+	//**************REFRESCAR *******//
+	
+	public void refrescar(String condition) {
+		
+	}
+	
+	
+	//*********limpiar campos***
+		public void limpiar_campos() {
+			textUser.setText(null);
+			textPass.setText(null);
+			textNombre.setText(null);
+		}
+	//*************rellenar_tabla() ******
+	
+	public void rellenar_tabla() {
+				
+		String sql = "SELECT `user`, `pass`, `nombre` FROM `trj_user`";
+				
+		try {
+			//Statement necesario para ir a la base de datos
+			Statement comando = conexion.createStatement();
+			comando.execute(sql);
+			ResultSet resultado = comando.executeQuery(sql);
+			while (resultado.next()) {
+				
+				Object[] fila = new Object[3];
+				//lo que hay entre comillas son lo campos de la base de datos
+				fila[0] = resultado.getString("user");
+				fila[1] = resultado.getString("pass");
+				fila[2] = resultado.getString("nombre");
+				
+				modelo.addRow(fila);
+				//System.out.println(resultado.getString("user"));
+				//modelo.removeRow();
+				
+			}
+			
+			
+		} catch (SQLException e2) {
+			// ERRORES
+			System.out.println(e2.getMessage().toString());
+			
+		}
+	
+		
+	}
+	
+	
+	/*
 	public void cargar_Combo() {
 		String sql = "SELECT `user` FROM `trj_user`";
 		
@@ -209,7 +278,6 @@ public class Modificar extends JFrame {
 		try {
 			registro = conexion.createStatement();
 			ResultSet consulta = registro.executeQuery(sql);
-			comboNombre.addItem("");
 			while (consulta.next()) {
 				comboNombre.addItem(consulta.getString("user").toString());
 				//System.out.println(consulta.getString("user"));
@@ -219,8 +287,9 @@ public class Modificar extends JFrame {
 			e2.printStackTrace();
 		}
 		
-	}// FIN CARGAR COMBO
+	}// FIN CARGAR COMBO*/
 	
+	/*
 	public void buscar(String str_search) {
 		
 		String sql = "SELECT * FROM `trj_user` WHERE `user`= '"+ str_search +"'";
@@ -243,9 +312,7 @@ public class Modificar extends JFrame {
 			// TODO: handle exception
 			e2.printStackTrace();
 		}
-	}
-	
-	
+	}*/
 }//fin clase
 	
 	
